@@ -1,26 +1,30 @@
 package assignment2;
 
+import java.text.DecimalFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-public class Main {
+public class Problem1 {
 	
 	static double height = 2;
 	static double width = 3;
 	
+	static DecimalFormat df = new DecimalFormat("#.##");
+	
 	public static void main(String[] args) {
-		Random r = new Random();
-		
 		IntStream.range(1, 21).forEach(i -> {
-			
 			int N = i * 100;
-			List<Point> points = generatePoints(N, width*2, height*2);
-			
+			double area = width * 2 * height * 2;
 			List<Point> inCircle = generatePoints(N, width*2, height*2).parallelStream()
 					.filter(p -> isInEllipse(p.x, p.y, width, height))
 					.collect(Collectors.toList());
-			System.out.println(N + " " + inCircle.size());
+			System.out.print(N);
+			double probability = (double) inCircle.size() / (double) N;
+			System.out.print("|" + df.format(probability * area));
+			double[] ci = confidenceInterval95(probability, N); 
+			
+			System.out.println("|[" + df.format(ci[0]*area) + ", " + df.format(ci[1]*area) + "]");
 		});
 	}
 	
@@ -34,6 +38,10 @@ public class Main {
 		return Math.pow(x/w, 2) + Math.pow(y/h, 2) <= 1.0;
 	}
 
+	public static double[] confidenceInterval95(double p, int n) {
+		return new double[] {p - (1.96 * Math.sqrt((p * (1-p))/n)), p + (1.96 * Math.sqrt((p * (1-p))/n))};
+	}
+	
 	public static class Point {
 		double x;
 		double y;
